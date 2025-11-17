@@ -1,7 +1,6 @@
 # Mean-Variance Portfolio Optimization Pipeline
 
-This repository packages the original working notebook into a clean GitHub-style
-project. It downloads historical prices from Yahoo Finance, converts them to
+This repository downloads historical prices from Yahoo Finance, converts them to
 monthly returns, sweeps a variance cap to trace the efficient frontier, and
 visualizes both the frontier and the corresponding allocations.
 
@@ -11,7 +10,7 @@ visualizes both the frontier and the corresponding allocations.
    git clone https://github.com/<your-username>/bdm_fall2025_opt.git
    cd bdm_fall2025_opt
    ```
-2. **Create a virtual environment (recommended):**
+2. **Create a virtual environment:**
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate  # macOS/Linux
@@ -40,7 +39,7 @@ visualizes both the frontier and the corresponding allocations.
 4. The script will display two matplotlib figures in the output cell: the
    efficient frontier and the allocation-by-risk chart.
 
-## Running on macOS (local machine)
+## Running on macOS local machine
 1. Make sure Homebrew has installed a recent Python (3.10+ recommended).
 2. From the project root, create/activate a virtual environment and install the
    requirements (see Quick Start). IPOPT is pulled in through `idaes-pse`, so no
@@ -51,7 +50,7 @@ visualizes both the frontier and the corresponding allocations.
    ```
 
 ## CLI Usage
-The CLI mirrors the professor's preferred format and exposes the core knobs:
+The CLI exposes the core knobs:
 ```bash
 python main.py \
   --tickers GE KO NVDA \
@@ -70,7 +69,7 @@ Running the example command produces two figures:
 1. **Efficient Frontier:** risk (variance) on the x-axis, expected monthly return
    on the y-axis. The dots correspond to IPOPT solutions under progressively
    looser variance caps.
-2. **Allocation vs Risk:** each line shows how a ticker's weight changes as the
+2. **Allocation vs Risk:** Each line shows how a ticker's weight changes as the
    risk budget grows. The plot confirms that allocations remain in the
    long-only, fully-invested region (0–1 on the y-axis).
 
@@ -88,9 +87,7 @@ bdm_fall2025_opt/
 - `idaes-pse` ships a helper (`idaes get-extensions`) that downloads IPOPT and
   compiles it for the current platform.
 - In Colab, the solver binary typically lands under `/content/bin/ipopt`; on a
-  local machine it will be inside `~/.idaes/bin/ipopt` unless you override the
+  local machine, it will be inside `~/.idaes/bin/ipopt` unless you override the
   target folder.
 - Pass the exact path to `--ipopt-path` if it differs from the default defined
   in `src/portfolio_pipeline.py`.
-
-Happy optimizing!
