@@ -7,12 +7,29 @@ translations of the working notebook logic.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Sequence
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import yfinance as yf
+
+try:  # pragma: no cover - optional inline backend for notebooks
+    from IPython import get_ipython
+
+    ipy = get_ipython()
+    if ipy is not None:
+        ipy.run_line_magic("matplotlib", "inline")
+except Exception:
+    pass
+
+try:  # pragma: no cover - ensure inline backend in Colab/Jupyter
+    import matplotlib
+
+    matplotlib.use("module://matplotlib_inline.backend_inline")
+except Exception:
+    pass
 
 from pyomo.environ import (
     ConcreteModel,
@@ -197,6 +214,48 @@ def sweep_efficient_frontier(
 # Plotting helpers
 # ---------------------------------------------------------------------------
 
+def plot_frontier(
+    frontier_df: pd.DataFrame,
+    output_dir: str | Path = "output",
+    show: bool = True,
+) -> Path:
+    """Plot the efficient frontier and save it under ``output_dir``."""
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(frontier_df["Risk"], frontier_df["Return"], marker="o", linestyle="-", markersize=3)
+    ax.set_title("Efficient Frontier")
+    ax.set_xlabel("Portfolio Risk (Variance)")
+    ax.set_ylabel("Expected Monthly Return")
+    ax.grid(True)
+    fig.tight_layout()
+
+    figure_path = output_path / "efficient_frontier.png"
+    fig.savefig(figure_path, dpi=300)
+
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+
+    return figure_path
+
+
+def plot_allocations(
+    alloc_df: pd.DataFrame,
+    output_dir: str | Path = "output",
+    show: bool = True,
+) -> Path:
+    """Plot allocation weights as a function of portfolio risk and save to ``output_dir``."""
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for col in alloc_df.columns:
+        ax.plot(
 def plot_frontier(frontier_df: pd.DataFrame) -> None:
     """Plot the efficient frontier."""
 
@@ -223,6 +282,23 @@ def plot_allocations(alloc_df: pd.DataFrame) -> None:
             linewidth=0.7,
             label=str(col),
         )
+    ax.set_title("Optimal Allocation vs Portfolio Risk")
+    ax.set_xlabel("Portfolio Risk (Variance)")
+    ax.set_ylabel("Proportion Invested")
+    ax.set_ylim(0.0, 1.0)
+    ax.grid(True)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    fig.tight_layout()
+
+    figure_path = output_path / "allocation_vs_risk.png"
+    fig.savefig(figure_path, dpi=300)
+
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+
+    return figure_path
     plt.title("Optimal Allocation vs Portfolio Risk")
     plt.xlabel("Portfolio Risk (Variance)")
     plt.ylabel("Proportion Invested")
@@ -243,6 +319,8 @@ def run_portfolio_example(
     end_date: str,
     ipopt_path: str = IPOPT_PATH,
     n_points: int = 200,
+    output_dir: str | Path = "output",
+    show_plots: bool = True,
 ):
     """Download data, solve the frontier, and plot results."""
 
@@ -256,6 +334,72 @@ def run_portfolio_example(
         n_points=n_points,
     )
 
+    plot_frontier(frontier_df, output_dir=output_dir, show=show_plots)
+    plot_allocations(alloc_df, output_dir=output_dir, show=show_plots)
+
+    return monthly_returns, frontier_df, alloc_df
+
+
+def select_max_return_weights(
+    frontier_df: pd.DataFrame, alloc_df: pd.DataFrame
+) -> pd.Series:
+    """Return the weight vector associated with the maximum-return frontier point."""
+
+    max_return_idx = frontier_df["Return"].idxmax()
+    target_risk = frontier_df.loc[max_return_idx, "Risk"]
+    weights = alloc_df.loc[target_risk]
+    return weights
+
+
+def evaluate_out_of_sample(
+    tickers: Sequence[str],
+    weights: pd.Series,
+    eval_start: str,
+    eval_end: str,
+    benchmark_tickers: Sequence[str] | None = None,
+) -> pd.DataFrame:
+    """Evaluate trained weights against benchmarks on an evaluation window."""
+
+    eval_returns = download_monthly_returns(tickers, eval_start, eval_end)
+    weights_vector = weights.loc[eval_returns.columns]
+
+    model_series = eval_returns @ weights_vector.values
+    eq_weights = np.ones(len(eval_returns.columns)) / len(eval_returns.columns)
+    equal_weight_series = eval_returns @ eq_weights
+
+    evaluation_rows = [
+        (
+            "Optimized Portfolio",
+            (1 + model_series).prod() - 1,
+            model_series.mean(),
+            model_series.shape[0],
+        ),
+        (
+            "Equal Weight",
+            (1 + equal_weight_series).prod() - 1,
+            equal_weight_series.mean(),
+            equal_weight_series.shape[0],
+        ),
+    ]
+
+    if benchmark_tickers:
+        for benchmark in benchmark_tickers:
+            bench_returns = download_monthly_returns([benchmark], eval_start, eval_end)
+            bench_series = bench_returns.iloc[:, 0]
+            evaluation_rows.append(
+                (
+                    benchmark,
+                    (1 + bench_series).prod() - 1,
+                    bench_series.mean(),
+                    bench_series.shape[0],
+                )
+            )
+
+    eval_df = pd.DataFrame(
+        evaluation_rows,
+        columns=["Strategy", "CumulativeReturn", "AverageMonthlyReturn", "Months"],
+    )
+    return eval_df
     plot_frontier(frontier_df)
     plot_allocations(alloc_df)
 

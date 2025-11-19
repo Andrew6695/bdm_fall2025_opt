@@ -1,6 +1,8 @@
 numpy
 pandas
 matplotlib
+matplotlib-inline
+ipython
 yfinance
 pyomo
 idaes-pse
