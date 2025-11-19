@@ -256,6 +256,25 @@ def plot_allocations(
     fig, ax = plt.subplots(figsize=(10, 6))
     for col in alloc_df.columns:
         ax.plot(
+def plot_frontier(frontier_df: pd.DataFrame) -> None:
+    """Plot the efficient frontier."""
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(frontier_df["Risk"], frontier_df["Return"], marker="o", linestyle="-", markersize=3)
+    plt.title("Efficient Frontier")
+    plt.xlabel("Portfolio Risk (Variance)")
+    plt.ylabel("Expected Monthly Return")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_allocations(alloc_df: pd.DataFrame) -> None:
+    """Plot allocation weights as a function of portfolio risk."""
+
+    plt.figure(figsize=(10, 6))
+    for col in alloc_df.columns:
+        plt.plot(
             alloc_df.index,
             alloc_df[col],
             marker="o",
@@ -280,6 +299,14 @@ def plot_allocations(
         plt.close(fig)
 
     return figure_path
+    plt.title("Optimal Allocation vs Portfolio Risk")
+    plt.xlabel("Portfolio Risk (Variance)")
+    plt.ylabel("Proportion Invested")
+    plt.ylim(0.0, 1.0)
+    plt.grid(True)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    plt.tight_layout()
+    plt.show()
 
 
 # ---------------------------------------------------------------------------
@@ -373,3 +400,7 @@ def evaluate_out_of_sample(
         columns=["Strategy", "CumulativeReturn", "AverageMonthlyReturn", "Months"],
     )
     return eval_df
+    plot_frontier(frontier_df)
+    plot_allocations(alloc_df)
+
+    return monthly_returns, frontier_df, alloc_df

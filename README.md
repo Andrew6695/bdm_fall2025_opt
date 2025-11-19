@@ -6,6 +6,9 @@ monthly returns, sweeps a variance cap to trace the efficient frontier, and
 visualizes both the frontier and the corresponding allocations. Every run saves
 publication-ready figures and evaluation tables inside `output/` for easy
 grading and documentation.
+This repository downloads historical prices from Yahoo Finance, converts them to
+monthly returns, sweeps a variance cap to trace the efficient frontier, and
+visualizes both the frontier and the corresponding allocations.
 
 ## Quick Start
 1. **Clone** the repository and enter the folder:
@@ -14,6 +17,7 @@ grading and documentation.
    cd bdm_fall2025_opt
    ```
 2. **Create a virtual environment (recommended):**
+2. **Create a virtual environment:**
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate  # macOS/Linux
@@ -24,6 +28,7 @@ grading and documentation.
    pip install -r requirements.txt
    ```
 4. **Run the CLI (with explicit training window):**
+4. **Run the CLI:**
    ```bash
    python main.py --tickers GE KO NVDA --start-date 2020-01-01 --end-date 2024-01-01
    ```
@@ -48,18 +53,23 @@ grading and documentation.
    be downloaded as supporting evidence.
 
 ## Running on macOS (local machine)
+   efficient frontier and the allocation-by-risk chart.
+
+## Running on macOS local machine
 1. Make sure Homebrew has installed a recent Python (3.10+ recommended).
 2. From the project root, create/activate a virtual environment and install the
    requirements (see Quick Start). IPOPT is pulled in through `idaes-pse`, so no
    manual compilation is necessary.
 3. Execute the CLI. For example (training data spans 2018–2024 while plots and
    CSVs are written to `output/`):
+3. Execute the CLI. For example:
    ```bash
    python main.py --tickers AAPL MSFT NVDA --start-date 2018-01-01 --end-date 2024-01-01
    ```
 
 ## CLI Usage
 The CLI mirrors the professor's preferred format and exposes the core knobs:
+The CLI exposes the core knobs:
 ```bash
 python main.py \
   --tickers GE KO NVDA \
@@ -70,6 +80,7 @@ python main.py \
   --output-dir output \
   --eval-start 2024-08-01 --eval-end 2024-10-31 \
   --benchmarks SPY BTC-USD
+  --ipopt-path /content/bin/ipopt
 ```
 - `--tickers`: space-separated list of equities.
 - `--start-date` / `--end-date`: inclusive date range pulled from Yahoo Finance.
@@ -118,6 +129,18 @@ Running the example command produces two figures (both written to `output/`):
 
 ## Project Layout
 ```
+
+## Example Output
+Running the example command produces two figures:
+1. **Efficient Frontier:** risk (variance) on the x-axis, expected monthly return
+   on the y-axis. The dots correspond to IPOPT solutions under progressively
+   looser variance caps.
+2. **Allocation vs Risk:** Each line shows how a ticker's weight changes as the
+   risk budget grows. The plot confirms that allocations remain in the
+   long-only, fully-invested region (0–1 on the y-axis).
+
+## Project Layout
+```
 bdm_fall2025_opt/
 ├── main.py                  # CLI entry point
 ├── src/portfolio_pipeline.py# Data download, Pyomo model, plotting
@@ -136,3 +159,7 @@ bdm_fall2025_opt/
   in `src/portfolio_pipeline.py`.
 
 Happy optimizing!
+  local machine, it will be inside `~/.idaes/bin/ipopt` unless you override the
+  target folder.
+- Pass the exact path to `--ipopt-path` if it differs from the default defined
+  in `src/portfolio_pipeline.py`.

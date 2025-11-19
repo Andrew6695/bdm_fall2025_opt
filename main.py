@@ -11,6 +11,9 @@ from src.portfolio_pipeline import (
     run_portfolio_example,
     select_max_return_weights,
 )
+from typing import List
+
+from src.portfolio_pipeline import IPOPT_PATH, run_portfolio_example
 
 
 def parse_args() -> argparse.Namespace:
@@ -74,6 +77,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     _, frontier_df, alloc_df = run_portfolio_example(
+    run_portfolio_example(
         tickers=args.tickers,
         start_date=args.start_date,
         end_date=args.end_date,
@@ -98,6 +102,8 @@ def main() -> None:
         evaluation.to_csv(evaluation_path, index=False)
         print("Paper trading evaluation saved to", evaluation_path)
         print(evaluation)
+
+    )
 
 
 if __name__ == "__main__":
