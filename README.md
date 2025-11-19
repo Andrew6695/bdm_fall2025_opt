@@ -1,6 +1,6 @@
 # Mean-Variance Portfolio Optimization Pipeline
 
-This repository packages the original working notebook into a clean GitHub-style
+This repository packages the original working notebook into a GitHub
 project. It downloads historical prices from Yahoo Finance, converts them to
 monthly returns, sweeps a variance cap to trace the efficient frontier, and
 visualizes both the frontier and the corresponding allocations. Every run saves
@@ -10,30 +10,7 @@ This repository downloads historical prices from Yahoo Finance, converts them to
 monthly returns, sweeps a variance cap to trace the efficient frontier, and
 visualizes both the frontier and the corresponding allocations.
 
-## Quick Start
-1. **Clone** the repository and enter the folder:
-   ```bash
-   git clone https://github.com/<your-username>/bdm_fall2025_opt.git
-   cd bdm_fall2025_opt
-   ```
-2. **Create a virtual environment (recommended):**
-2. **Create a virtual environment:**
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate  # macOS/Linux
-   # .venv\\Scripts\\Activate.ps1  # Windows PowerShell
-   ```
-3. **Install the dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Run the CLI (with explicit training window):**
-4. **Run the CLI:**
-   ```bash
-   python main.py --tickers GE KO NVDA --start-date 2020-01-01 --end-date 2024-01-01
-   ```
-
-## Running in Google Colab
+## Quick Start in Google Colab
 1. Upload (or clone) the repo inside your Colab workspace.
 2. Install the scientific stack plus IPOPT extensions:
    ```python
